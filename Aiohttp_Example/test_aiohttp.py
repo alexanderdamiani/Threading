@@ -12,8 +12,6 @@ from pypeln import TaskPool
 
 from free_proxy_scraper import get_us_proxy_list
 
-limit = 10
-
 def timeit(func):
     '''
     Decorator to time it takes for function to return. Outputs to stdout.
@@ -24,7 +22,6 @@ def timeit(func):
         print("--- %s seconds ---" % (time.time() - start_time))
         return res
     return wrapper
-
 
 class TaskPool(object):
     '''
@@ -124,7 +121,7 @@ def write_to_excel(txt, i):
 
     print(f'Wrote {i}')
 
-async def async_setup(urls, ssl_ctx, hdr, user_agent, ip_list):
+async def async_setup(urls, ssl_ctx, hdr, user_agent, ip_list=[]):
     '''
     Reference (asyncio.Semaphore) : https://docs.python.org/3/library/asyncio-sync.html#asyncio.Semaphore
     Reference (aiohttp) : https://aiohttp.readthedocs.io/en/stable/client_reference.html
@@ -143,6 +140,8 @@ async def async_setup(urls, ssl_ctx, hdr, user_agent, ip_list):
     ip_list : list of free HTTP proxy IP addresses in the US
     ---------------------
     '''
+    limit = 10 ## limit the number of threads that can be run at any one time ##
+
     async with asyncio.Semaphore(limit):
         async with aiohttp.TCPConnector(ssl=ssl_ctx, limit=None) as connector:
             async with aiohttp.ClientSession(connector=connector) as session, TaskPool(limit) as tasks:
@@ -153,9 +152,7 @@ if __name__ == '__main__':
     urls = []
     for i in range(1, 20):
         for j in range(1, 10):
-            urls.append(f'http://testing-ground.scraping.pro/table?products=1&years={i}&quarters={j}')
-
-    print(len(urls))
+            urls.append(f'http://testing-ground.scraping.pro/table?products=1&years={i}&quarters={j}') ## free web scraping site ##
 
     ssl_ctx = ssl.create_default_context()
     ssl_ctx.check_hostname = False
@@ -170,13 +167,12 @@ if __name__ == '__main__':
 
     user_agent = UserAgent(fallback='Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11')
     # ip_list = get_us_proxy_list(http_only=True) ## free ip source unreliable ##
-    ip_list = []
 
     # --------------------------------------------- #
     # run the event loop until all tasks are complete
     loop = asyncio.get_event_loop()
     start_time = time.time()
-    loop.run_until_complete(async_setup(urls, ssl_ctx, hdr, user_agent, ip_list))
+    loop.run_until_complete(async_setup(urls, ssl_ctx, hdr, user_agent))
     print("--- %s seconds ---" % (time.time() - start_time))
     print('Done.')
     # --------------------------------------------- #
