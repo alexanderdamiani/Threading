@@ -1,2 +1,2 @@
 # Threading
-threading, aiohttp, async
+Implementation examples of threading, aiohttp, and async packages.
