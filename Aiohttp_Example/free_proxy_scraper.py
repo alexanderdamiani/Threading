@@ -9,9 +9,6 @@ import time
 import openpyxl
 from fake_useragent import UserAgent
 
-from pypeln import TaskPool
-import async_timeout
-
 def get_proxy_html(http_only=False):
 	'''
 	Function
