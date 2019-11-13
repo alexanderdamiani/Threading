@@ -8,8 +8,15 @@ from fake_useragent import UserAgent
 import random
 import concurrent
 from pypeln import TaskPool
+import logging
 
 from free_proxy_scraper import get_us_proxy_list
+
+logging.basicConfig(filename='app.log', 
+                    level=logging.INFO,
+                    filemode='a', ## append ##
+                    format='[%(asctime)s] - %(name)s - %(levelname)s - %(message)s',
+                    datefmt='%H:%M:%S')
 
 def timeit(func):
     '''
@@ -77,14 +84,10 @@ async def parse_html(url, i, hdr, user_agent, ip_list, session):
         # async with session.get(url, headers=hdr, proxy=ip) as response: ## free ip source unreliable ##
         async with session.get(url, headers=hdr) as response:
             html = await response.text()
-    except (aiohttp.client_exceptions.ServerDisconnectedError,
-            aiohttp.client_exceptions.ClientProxyConnectionError,
-            aiohttp.client_exceptions.ClientOSError,
-            aiohttp.client_exceptions.ClientHttpProxyError,
-            concurrent.futures._base.CancelledError):
-
+    except aiohttp.client_exceptions.ServerDisconnectedError as e:
         # if ip in ip_list: ip_list.remove(ip) ## remove bad proxy ips to prevent reuse ## ## free ip source unreliable ##
-
+        logging.exception(f'[{i}] - {e}')
+        
         return await parse_html(url, i, hdr, user_agent, ip_list, session)
 
     if html:
