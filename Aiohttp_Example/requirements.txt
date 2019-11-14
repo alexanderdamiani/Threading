@@ -3,3 +3,4 @@ aiohttp
 bs4
 openpyxl
 pypeln
+pytest
